@@ -1,7 +1,8 @@
-services:
+      services:
   - type: web
-    name: voiceforge-backend
+    name: voiceforge-api
     env: python
+    runtime: python311
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -19,3 +20,5 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      - key: PYTHON_VERSION
+        value: "3.11.11"
