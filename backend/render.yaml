@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: voiceforge-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: VAPI_API_KEY
+        sync: false
+      - key: SERPAPI_KEY
+        sync: false
+      - key: APOLLO_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
