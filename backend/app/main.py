@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.config import settings
-from app.routers import leads, campaigns, calls, analytics, voice
-from app.services.campaign_scheduler import scheduler
+from config import settings
+from routers import leads, campaigns, calls, analytics, voice
+from services.campaign_scheduler import CampaignScheduler
+import asyncio
+from datetime import datetime
+
+scheduler = CampaignScheduler()
 
 app = FastAPI(
     title="VoiceForge AI API",
