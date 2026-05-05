@@ -1,5 +1,5 @@
 fastapi==0.115.6
-uvicorn[standard]==0.34.0
+uvicorn==0.34.0
 supabase==2.7.1
 python-dotenv==1.0.1
 httpx==0.28.1
@@ -7,7 +7,7 @@ pydantic==2.10.5
 pydantic-core==2.27.2
 pydantic-settings==2.7.1
 python-multipart==0.0.19
-apscheduler==3.11.0
 openai==1.59.3
 googlemaps==4.10.0
 python-dateutil==2.9.0
+apscheduler==3.11.0
