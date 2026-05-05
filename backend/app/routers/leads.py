@@ -1,16 +1,17 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-from app.database import get_db
-from app.models import Lead, LeadStatus
-from app.services.lead_generator import LeadGenerator
+from database import get_db
+from models import Lead, LeadStatus
+from services.lead_generator import LeadGenerator
 import uuid
 from datetime import datetime
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Lead])
+
+@router.get("/")
 async def get_leads(
-    status: Optional[LeadStatus] = None,
+    status: Optional[str] = None,
     campaign: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = 50,
@@ -27,7 +28,8 @@ async def get_leads(
         query = query.or_(f"name.ilike.%{search}%,company.ilike.%{search}%,phone.ilike.%{search}%")
     
     result = query.order("created_at", desc=True).range(offset, offset + limit).execute()
-    return result.data
+    return result.data if result.data else []
+
 
 @router.post("/generate")
 async def generate_leads(
@@ -67,26 +69,52 @@ async def generate_leads(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/")
 async def create_lead(lead: Lead):
     db = get_db()
     result = db.table("leads").insert({
         "id": str(uuid.uuid4()),
-        **lead.dict(exclude={"id", "created_at"}),
+        "name": lead.name,
+        "phone": lead.phone,
+        "email": lead.email,
+        "company": lead.company,
+        "source": lead.source,
+        "status": lead.status.value if hasattr(lead.status, 'value') else lead.status,
+        "score": lead.score,
         "created_at": datetime.now().isoformat()
     }).execute()
     return result.data[0] if result.data else {}
 
+
 @router.put("/{lead_id}")
 async def update_lead(lead_id: str, lead: Lead):
     db = get_db()
-    result = db.table("leads").update(lead.dict(exclude={"id", "created_at"})).eq("id", lead_id).execute()
+    result = db.table("leads").update({
+        "name": lead.name,
+        "phone": lead.phone,
+        "email": lead.email,
+        "company": lead.company,
+        "source": lead.source,
+        "status": lead.status.value if hasattr(lead.status, 'value') else lead.status,
+        "score": lead.score,
+    }).eq("id", lead_id).execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Lead not found")
     return result.data[0]
 
+
 @router.delete("/{lead_id}")
 async def delete_lead(lead_id: str):
     db = get_db()
-    result = db.table("leads").delete().eq("id", lead_id).execute()
+    db.table("leads").delete().eq("id", lead_id).execute()
     return {"status": "deleted"}
+
+
+@router.get("/{lead_id}")
+async def get_lead(lead_id: str):
+    db = get_db()
+    result = db.table("leads").select("*").eq("id", lead_id).single().execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    return result.data
